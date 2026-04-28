@@ -12,23 +12,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Завантаження вашого коду на віртуальну машину GitHub
     - uses: actions/checkout@v4
 
-    # 2. Встановлення .NET SDK (використовуємо версію 8.0, змініть за потреби)
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
-    # 3. Відновлення залежностей (NuGet packages)
     - name: Restore dependencies
-      run: dotnet restore MedCore.sln
+      run: dotnet restore 
 
-    # 4. Збірка проєкту (Build)
     - name: Build Solution
-      run: dotnet build MedCore.sln --no-restore --configuration Release
+      run: dotnet build --no-restore --configuration Release
 
-    # 5. Запуск юніт-тестів
     - name: Run Unit Tests
-      run: dotnet test MedCore.sln --no-build --configuration Release --verbosity normal
+      run: dotnet test --no-build --configuration Release --verbosity normal
