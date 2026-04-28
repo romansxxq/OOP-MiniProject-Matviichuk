@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MedCore.Application/MedCore.Application.csproj" />
+    <Project Path="src/MedCore.Console/MedCore.Console.csproj" />
+    <Project Path="src/MedCore.Domain/MedCore.Domain.csproj" />
+    <Project Path="src/MedCore.Infrastructure/MedCore.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MedCore.Tests/MedCore.Tests.csproj" />
+  </Folder>
+</Solution>
