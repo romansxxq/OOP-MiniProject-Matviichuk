@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MedCore.Application\MedCore.Application.csproj" />
+    <ProjectReference Include="..\MedCore.Infrastructure\MedCore.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

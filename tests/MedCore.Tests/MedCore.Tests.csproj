@@ -20,6 +20,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MedCore.Domain\MedCore.Domain.csproj" />
+    <ProjectReference Include="..\..\src\MedCore.Infrastructure\MedCore.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\MedCore.Application\MedCore.Application.csproj" />
   </ItemGroup>
 
 </Project>
