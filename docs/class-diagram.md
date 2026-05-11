@@ -2,36 +2,49 @@
 classDiagram
     %% Layer: Domain
     namespace Domain {
+        class IEntity~TId~ {
+            <<Interface>>
+            +Id : TId
+        }
+
         class MedicalStaff {
             <<Abstract>>
-            +Guid Id
+            +int Id
             +FullName Name
             +string Specialization
-            +Work() void*
+            +PerformDuty() void*
         }
 
         class Doctor {
             +List~string~ Certificates
-            +Work() void
+            +int? DepartmentId
+            +AssignToDepartment(int id) void
         }
 
         class Nurse {
             +int FloorLevel
-            +Work() void
+        }
+
+        class Department {
+            +int Id
+            +string Name
+            +int Floor
+            +Rename(string name) void
         }
 
         class Patient {
-            +Guid Id
+            +int Id
             +FullName Name
-            +string MedicalHistoryNumber
+            +string MedicalCardNumber
         }
 
         class Appointment {
-            +Guid Id
-            +Guid PatientId
-            +Guid DoctorId
+            +int Id
+            +int PatientId
+            +int DoctorId
             +DateTime AppointmentTime
             +AppointmentStatus Status
+            +Confirm() void
             +Cancel() void
         }
 
@@ -42,63 +55,136 @@ classDiagram
             +ToString() string
         }
 
+        class AppointmentStatus {
+            <<Enum>>
+            New
+            Confirmed
+            Cancelled
+        }
+
+        class IRepository~T,TId~ {
+            <<Interface>>
+            +GetAll() IReadOnlyCollection~T~
+            +GetById(TId id) T
+            +Add(T entity) void
+            +Update(T entity) void
+            +Delete(TId id) void
+        }
+
         class IAppointmentRepository {
             <<Interface>>
-            +Add(Appointment app) void
-            +GetAll() List~Appointment~
-            +GetByDoctorId(Guid id) List~Appointment~
+            +GetByDoctorId(int id) IReadOnlyCollection~Appointment~
+            +GetByPatientId(int id) IReadOnlyCollection~Appointment~
         }
 
         class IValidationStrategy {
             <<Interface>>
-            +IsValid(Appointment app, List~existing~ ) bool
+            +IsValid(Appointment app, IReadOnlyCollection~Appointment~ existing) bool
+        }
+
+        class IDataStore~T~ {
+            <<Interface>>
+            +LoadAsync() Task~T~
+            +SaveAsync(T data) Task
         }
     }
 
     %% Layer: Application
     namespace Application {
         class AppointmentService {
-            -IAppointmentRepository _repository
-            -IValidationStrategy _strategy
-            +CreateAppointment(Guid pId, Guid dId, DateTime time) Result
+            +CreateAppointment(int patientId, int doctorId, DateTime time) Result
+            +ConfirmAppointment(int id) Result
+            +CancelAppointment(int id) Result
+        }
+
+        class PatientService {
+            +RegisterPatient(string firstName, string lastName, string card) Result
+        }
+
+        class DoctorService {
+            +RegisterDoctor(string fullName, string specialization) Result
+        }
+
+        class DepartmentService {
+            +CreateDepartment(string name, int floor) Result
+            +AssignDoctorToDepartment(int doctorId, int departmentId) Result
+        }
+
+        class QueryService {
+            +GetActiveAppointments() IReadOnlyCollection~Appointment~
+            +SearchPatients(string namePart, string cardPart) IReadOnlyCollection~Patient~
+        }
+
+        class PersistenceService {
+            +LoadAsync() Result
+            +SaveAsync() Result
         }
 
         class StaffFactory {
             <<Abstract>>
-            +CreateStaff(string name, string spec) MedicalStaff
+            +CreateStaff(int id, string name, string spec) MedicalStaff
         }
 
         class DoctorFactory {
-            +CreateStaff(string name, string spec) MedicalStaff
+            +CreateStaff(int id, string name, string spec) MedicalStaff
+        }
+
+        class MedCoreData {
+            +Patients : List~Patient~
+            +Doctors : List~Doctor~
+            +Departments : List~Department~
+            +Appointments : List~Appointment~
         }
     }
 
     %% Layer: Infrastructure
     namespace Infrastructure {
-        class InMemoryAppointmentRepository {
-            -List~Appointment~ _storage
-            +Add(Appointment app) void
+        class InMemoryRepository~T,TId~ {
+            -Dictionary~TId,T~ storage
         }
-        
-        class TimeSlotValidationStrategy {
-            +IsValid(Appointment app, List~existing~) bool
-        }
+
+        class InMemoryAppointmentRepository
+
+        class JsonFileDataStore
+
+        class TimeSlotValidationStrategy
+        class DoctorDailyLimitValidationStrategy
+        class PatientTimeConflictValidationStrategy
+        class CompositeValidationStrategy
     }
 
     %% Relationships
-    MedicalStaff <|-- Doctor : Inheritance
-    MedicalStaff <|-- Nurse : Inheritance
-    MedicalStaff *-- FullName : Composition
-    Patient *-- FullName : Composition
-    
-    AppointmentService --> IAppointmentRepository : Dependency Inversion
-    AppointmentService --> IValidationStrategy : Strategy Pattern
-    
-    InMemoryAppointmentRepository ..|> IAppointmentRepository : Realization
-    TimeSlotValidationStrategy ..|> IValidationStrategy : Realization
-    
-    StaffFactory <|-- DoctorFactory : Factory Method
-    DoctorFactory ..> Doctor : Creates
-    
-    AppointmentService ..> Appointment : Manages
+    IEntity~TId~ <|.. MedicalStaff
+    MedicalStaff <|-- Doctor
+    MedicalStaff <|-- Nurse
+    MedicalStaff *-- FullName
+    Patient *-- FullName
+
+    Appointment --> AppointmentStatus
+
+    IAppointmentRepository ..|> IRepository~Appointment,int~
+    InMemoryRepository~T,TId~ ..|> IRepository~T,TId~
+    InMemoryAppointmentRepository --|> InMemoryRepository~Appointment,int~
+    InMemoryAppointmentRepository ..|> IAppointmentRepository
+
+    JsonFileDataStore ..|> IDataStore~MedCoreData~
+
+    TimeSlotValidationStrategy ..|> IValidationStrategy
+    DoctorDailyLimitValidationStrategy ..|> IValidationStrategy
+    PatientTimeConflictValidationStrategy ..|> IValidationStrategy
+    CompositeValidationStrategy ..|> IValidationStrategy
+
+    AppointmentService --> IAppointmentRepository
+    AppointmentService --> IRepository~Patient,int~
+    AppointmentService --> IRepository~Doctor,int~
+    AppointmentService --> IValidationStrategy
+
+    PersistenceService --> IDataStore~MedCoreData~
+    PersistenceService --> IRepository~Patient,int~
+    PersistenceService --> IRepository~Doctor,int~
+    PersistenceService --> IRepository~Department,int~
+    PersistenceService --> IAppointmentRepository
+
+    StaffFactory <|-- DoctorFactory
+    DoctorFactory ..> Doctor
 ```

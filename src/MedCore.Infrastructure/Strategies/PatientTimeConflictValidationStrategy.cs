@@ -4,12 +4,12 @@ using MedCore.Domain.Interfaces;
 
 namespace MedCore.Infrastructure.Strategies;
 
-public class TimeSlotValidationStrategy : IValidationStrategy
+public class PatientTimeConflictValidationStrategy : IValidationStrategy
 {
     public bool IsValid(Appointment app, IReadOnlyCollection<Appointment> existing)
     {
         return !existing.Any(a =>
-            a.DoctorId == app.DoctorId &&
+            a.PatientId == app.PatientId &&
             a.AppointmentTime == app.AppointmentTime &&
             a.Status != AppointmentStatus.Cancelled);
     }

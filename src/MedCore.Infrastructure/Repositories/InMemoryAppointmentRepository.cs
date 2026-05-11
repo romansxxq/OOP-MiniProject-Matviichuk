@@ -1,22 +1,15 @@
 using MedCore.Domain.Entities;
 using MedCore.Domain.Interfaces;
 namespace MedCore.Infrastructure.Repositories;
-public class InMemoryAppointmentRepository : IAppointmentRepository
+public class InMemoryAppointmentRepository : InMemoryRepository<Appointment, int>, IAppointmentRepository
 {
-    private readonly List<Appointment> _storage = new();
-
-    public void Add(Appointment app)
+    public IReadOnlyCollection<Appointment> GetByDoctorId(int id)
     {
-        _storage.Add(app);
+        return GetAll().Where(a => a.DoctorId == id).ToList();
     }
 
-    public List<Appointment> GetAll()
+    public IReadOnlyCollection<Appointment> GetByPatientId(int patientId)
     {
-        return _storage.ToList();
-    }
-
-    public List<Appointment> GetByDoctorId(int id)
-    {
-        return _storage.Where(a => a.DoctorId == id).ToList();
+        return GetAll().Where(a => a.PatientId == patientId).ToList();
     }
 }
