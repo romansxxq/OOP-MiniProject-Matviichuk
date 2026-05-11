@@ -1,6 +1,6 @@
 using MedCore.Domain.ValueObjects;
 namespace MedCore.Domain.Abstractions;
-public abstract class MedicalStaff
+public abstract class MedicalStaff : IEntity<int>
 {
     public int Id { get; private set; }
     public FullName Name { get; private set; }

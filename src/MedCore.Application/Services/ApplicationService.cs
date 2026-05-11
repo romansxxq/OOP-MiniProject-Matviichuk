@@ -5,27 +5,88 @@ using MedCore.Domain.Interfaces;
 namespace MedCore.Application.Services;
 public class AppointmentService
 {
-    private readonly IAppointmentRepository _repository;
+    private readonly IAppointmentRepository _appointments;
+    private readonly IRepository<Patient, int> _patients;
+    private readonly IRepository<Doctor, int> _doctors;
     private readonly IValidationStrategy _strategy;
 
-    public AppointmentService(IAppointmentRepository repository, IValidationStrategy strategy)
+    public AppointmentService(
+        IAppointmentRepository appointments,
+        IRepository<Patient, int> patients,
+        IRepository<Doctor, int> doctors,
+        IValidationStrategy strategy)
     {
-        _repository = repository;
+        _appointments = appointments;
+        _patients = patients;
+        _doctors = doctors;
         _strategy = strategy;
     }
 
-    public Result CreateAppointment(int pId, int dId, DateTime time)
+    public Result<Appointment> CreateAppointment(int patientId, int doctorId, DateTime time)
     {
-        var tempId = new Random().Next(1, 10000); // Тимчасовий ID для запису
-        var app = new Appointment(tempId, pId, dId, time);
-        var existing = _repository.GetByDoctorId(dId);
+        if (time <= DateTime.Now)
+            return Result<Appointment>.Failure("Час прийому має бути у майбутньому.");
 
-        if (!_strategy.IsValid(app, existing))
+        if (_patients.GetById(patientId) is null)
+            return Result<Appointment>.Failure("Пацієнта не знайдено.");
+
+        if (_doctors.GetById(doctorId) is null)
+            return Result<Appointment>.Failure("Лікаря не знайдено.");
+
+        var id = IdGenerator.NextId(_appointments);
+        Appointment appointment;
+        try
         {
-            return Result.Failure("Error: Appointment time conflicts with existing appointments for the doctor.");
+            appointment = new Appointment(id, patientId, doctorId, time);
+        }
+        catch (ArgumentException ex)
+        {
+            return Result<Appointment>.Failure(ex.Message);
         }
 
-        _repository.Add(app);
-        return Result.Success("Result: Appointment created successfully!");
+        var existing = _appointments.GetAll();
+        if (!_strategy.IsValid(appointment, existing))
+            return Result<Appointment>.Failure("Час прийому конфліктує з існуючими записами.");
+
+        _appointments.Add(appointment);
+        return Result<Appointment>.Success(appointment, "Запис створено.");
+    }
+
+    public Result ConfirmAppointment(int appointmentId)
+    {
+        var appointment = _appointments.GetById(appointmentId);
+        if (appointment is null)
+            return Result.Failure("Запис не знайдено.");
+
+        try
+        {
+            appointment.Confirm();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
+
+        _appointments.Update(appointment);
+        return Result.Success("Запис підтверджено.");
+    }
+
+    public Result CancelAppointment(int appointmentId)
+    {
+        var appointment = _appointments.GetById(appointmentId);
+        if (appointment is null)
+            return Result.Failure("Запис не знайдено.");
+
+        try
+        {
+            appointment.Cancel();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
+
+        _appointments.Update(appointment);
+        return Result.Success("Запис скасовано.");
     }
 }

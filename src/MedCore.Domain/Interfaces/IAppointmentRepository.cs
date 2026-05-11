@@ -1,8 +1,7 @@
 using MedCore.Domain.Entities;
 namespace MedCore.Domain.Interfaces;
-public interface IAppointmentRepository
+public interface IAppointmentRepository : IRepository<Appointment, int>
 {
-    void Add(Appointment appointment);
-    List<Appointment> GetAll();
-    List<Appointment> GetByDoctorId(int doctorId);
+    IReadOnlyCollection<Appointment> GetByDoctorId(int doctorId);
+    IReadOnlyCollection<Appointment> GetByPatientId(int patientId);
 }

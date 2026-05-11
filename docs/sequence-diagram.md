@@ -4,15 +4,19 @@ sequenceDiagram
     actor User as Користувач (Console)
     participant AppService as AppointmentService (Application)
     participant Strategy as IValidationStrategy (Strategy Pattern)
+    participant PatientRepo as IRepository<Patient> (Infrastructure)
+    participant DoctorRepo as IRepository<Doctor> (Infrastructure)
     participant Repo as IAppointmentRepository (Infrastructure)
     participant Entity as Appointment (Domain Entity)
 
     User->>AppService: CreateAppointment(patientId, doctorId, time)
     
     activate AppService
-    AppService->>Repo: GetByDoctorId(doctorId)
+    AppService->>PatientRepo: GetById(patientId)
+    AppService->>DoctorRepo: GetById(doctorId)
+    AppService->>Repo: GetAll()
     activate Repo
-    Repo-->>AppService: List<Appointment> existingAppointments
+    Repo-->>AppService: IReadOnlyCollection<Appointment> existingAppointments
     deactivate Repo
 
     Note over AppService, Strategy: Перевірка бізнес-правил (SOLID: Strategy)
@@ -22,7 +26,7 @@ sequenceDiagram
     deactivate Strategy
 
     Note over AppService, Entity: Створення об'єкта з інваріантами
-    AppService->>Entity: new Appointment(pId, dId, time)
+    AppService->>Entity: new Appointment(patientId, doctorId, time)
     activate Entity
     Entity-->>AppService: appointmentInstance
     deactivate Entity
