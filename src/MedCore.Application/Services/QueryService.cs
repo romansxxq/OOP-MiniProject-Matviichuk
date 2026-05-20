@@ -1,3 +1,4 @@
+using MedCore.Application.Common;
 using MedCore.Application.Models;
 using MedCore.Domain.Entities;
 using MedCore.Domain.Enums;
@@ -10,15 +11,18 @@ public class QueryService
     private readonly IAppointmentRepository _appointments;
     private readonly IRepository<Patient, int> _patients;
     private readonly IRepository<Doctor, int> _doctors;
+    private readonly IClock _clock;
 
     public QueryService(
         IAppointmentRepository appointments,
         IRepository<Patient, int> patients,
-        IRepository<Doctor, int> doctors)
+        IRepository<Doctor, int> doctors,
+        IClock clock)
     {
         _appointments = appointments;
         _patients = patients;
         _doctors = doctors;
+        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
     public IReadOnlyCollection<Appointment> GetActiveAppointments()
@@ -86,7 +90,7 @@ public class QueryService
     public AppointmentStats GetAppointmentStats()
     {
         var appointments = _appointments.GetAll();
-        var now = DateTime.Now;
+        var now = _clock.Now;
 
         return new AppointmentStats
         {

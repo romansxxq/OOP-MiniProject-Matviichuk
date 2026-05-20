@@ -9,22 +9,25 @@ public class AppointmentService
     private readonly IRepository<Patient, int> _patients;
     private readonly IRepository<Doctor, int> _doctors;
     private readonly IValidationStrategy _strategy;
+    private readonly IClock _clock;
 
     public AppointmentService(
         IAppointmentRepository appointments,
         IRepository<Patient, int> patients,
         IRepository<Doctor, int> doctors,
-        IValidationStrategy strategy)
+        IValidationStrategy strategy,
+        IClock clock)
     {
         _appointments = appointments;
         _patients = patients;
         _doctors = doctors;
         _strategy = strategy;
+        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
     public Result<Appointment> CreateAppointment(int patientId, int doctorId, DateTime time)
     {
-        if (time <= DateTime.Now)
+        if (time <= _clock.Now)
             return Result<Appointment>.Failure("Час прийому має бути у майбутньому.");
 
         if (_patients.GetById(patientId) is null)

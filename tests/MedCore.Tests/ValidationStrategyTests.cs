@@ -40,6 +40,39 @@ public class ValidationStrategyTests
         Assert.False(composite.IsValid(appointment, new List<Appointment>()));
     }
 
+    [Fact]
+    public void DoctorDailyLimitStrategy_ShouldIgnoreCancelledAppointments()
+    {
+        var strategy = new DoctorDailyLimitValidationStrategy(2);
+        var doctorId = 10;
+        var day = new DateTime(2026, 2, 1, 10, 0, 0);
+
+        var confirmed = new Appointment(1, 1, doctorId, day);
+        confirmed.Confirm();
+        var cancelled = new Appointment(2, 2, doctorId, day.AddHours(1));
+        cancelled.Cancel();
+
+        var existing = new List<Appointment> { confirmed, cancelled };
+        var newAppointment = new Appointment(3, 3, doctorId, day.AddHours(2));
+
+        Assert.True(strategy.IsValid(newAppointment, existing));
+    }
+
+    [Fact]
+    public void TimeSlotStrategy_ShouldIgnoreCancelledAppointments()
+    {
+        var strategy = new TimeSlotValidationStrategy();
+        var doctorId = 11;
+        var time = new DateTime(2026, 2, 2, 9, 0, 0);
+
+        var cancelled = new Appointment(1, 1, doctorId, time);
+        cancelled.Cancel();
+        var existing = new List<Appointment> { cancelled };
+        var newAppointment = new Appointment(2, 2, doctorId, time);
+
+        Assert.True(strategy.IsValid(newAppointment, existing));
+    }
+
     private sealed class AlwaysValidStrategy : IValidationStrategy
     {
         public bool IsValid(Appointment app, IReadOnlyCollection<Appointment> existing) => true;
