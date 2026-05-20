@@ -33,6 +33,19 @@ public class PatientServiceTests
     }
 
     [Fact]
+    public void RegisterPatient_ShouldRejectDuplicateCardNumber_CaseInsensitive()
+    {
+        var repo = new InMemoryRepository<Patient, int>();
+        var service = new PatientService(repo);
+
+        service.RegisterPatient("Iryna", "Melnyk", "Card-01");
+        var result = service.RegisterPatient("Olena", "Koval", "card-01");
+
+        Assert.False(result.IsSuccess);
+        Assert.Single(repo.GetAll());
+    }
+
+    [Fact]
     public void RegisterPatient_ShouldRejectEmptyCardNumber()
     {
         var repo = new InMemoryRepository<Patient, int>();

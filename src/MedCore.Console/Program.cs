@@ -1,5 +1,7 @@
-﻿using MedCore.Application.Factories;
+﻿using MedCore.Application.Common;
+using MedCore.Application.Factories;
 using MedCore.Application.Services;
+using MedCore.Console;
 using MedCore.Domain.Entities;
 using MedCore.Domain.Interfaces;
 using MedCore.Infrastructure.Repositories;
@@ -21,14 +23,16 @@ IValidationStrategy validationStrategy = new CompositeValidationStrategy(new IVa
 	new DoctorDailyLimitValidationStrategy(10)
 });
 
-var appointmentService = new AppointmentService(appointmentRepo, patientRepo, doctorRepo, validationStrategy);
+var clock = new SystemClock();
+var appointmentService = new AppointmentService(appointmentRepo, patientRepo, doctorRepo, validationStrategy, clock);
 var patientService = new PatientService(patientRepo);
 var doctorService = new DoctorService(doctorRepo, new DoctorFactory());
 var departmentService = new DepartmentService(departmentRepo, doctorRepo);
-var queryService = new QueryService(appointmentRepo, patientRepo, doctorRepo);
+var queryService = new QueryService(appointmentRepo, patientRepo, doctorRepo, clock);
 
 var dataStore = new JsonFileDataStore(Path.Combine("data", "medcore.json"));
-var persistenceService = new PersistenceService(dataStore, patientRepo, doctorRepo, nurseRepo, departmentRepo, appointmentRepo);
+var errorReporter = new ConsoleErrorReporter();
+var persistenceService = new PersistenceService(dataStore, patientRepo, doctorRepo, nurseRepo, departmentRepo, appointmentRepo, errorReporter);
 
 var loadResult = await persistenceService.LoadAsync();
 Console.WriteLine(loadResult.Message);

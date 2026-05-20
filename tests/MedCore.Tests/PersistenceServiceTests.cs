@@ -6,6 +6,7 @@ using Xunit;
 
 namespace MedCore.Tests;
 
+[Trait("Category", "Integration")]
 public class PersistenceServiceTests
 {
     [Fact]

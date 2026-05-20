@@ -15,6 +15,7 @@ public class PersistenceService
     private readonly IRepository<Nurse, int> _nurses;
     private readonly IRepository<Department, int> _departments;
     private readonly IAppointmentRepository _appointments;
+    private readonly IErrorReporter _errorReporter;
 
     public PersistenceService(
         IDataStore<MedCoreData> store,
@@ -22,7 +23,8 @@ public class PersistenceService
         IRepository<Doctor, int> doctors,
         IRepository<Nurse, int> nurses,
         IRepository<Department, int> departments,
-        IAppointmentRepository appointments)
+        IAppointmentRepository appointments,
+        IErrorReporter? errorReporter = null)
     {
         _store = store;
         _patients = patients;
@@ -30,6 +32,7 @@ public class PersistenceService
         _nurses = nurses;
         _departments = departments;
         _appointments = appointments;
+        _errorReporter = errorReporter ?? new NullErrorReporter();
     }
 
     public async Task<Result> LoadAsync(CancellationToken cancellationToken = default)
@@ -51,14 +54,17 @@ public class PersistenceService
         }
         catch (FileNotFoundException)
         {
+            _errorReporter.Report("Data file not found during load.");
             return Result.Success("Файл даних не знайдено. Стартуємо з порожнього стану.");
         }
         catch (JsonException ex)
         {
+            _errorReporter.Report("Invalid JSON while loading data.", ex);
             return Result.Failure($"Помилка JSON: {ex.Message}");
         }
         catch (IOException ex)
         {
+            _errorReporter.Report("I/O error while loading data.", ex);
             return Result.Failure($"Помилка читання файлу: {ex.Message}");
         }
     }
@@ -81,6 +87,7 @@ public class PersistenceService
         }
         catch (IOException ex)
         {
+            _errorReporter.Report("I/O error while saving data.", ex);
             return Result.Failure($"Помилка запису файлу: {ex.Message}");
         }
     }
