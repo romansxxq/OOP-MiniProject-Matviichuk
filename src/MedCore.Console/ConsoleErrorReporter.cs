@@ -8,10 +8,10 @@ public sealed class ConsoleErrorReporter : IErrorReporter
     {
         if (exception is null)
         {
-            Console.Error.WriteLine(message);
+            System.Console.Error.WriteLine(message);
             return;
         }
 
-        Console.Error.WriteLine($"{message} ({exception.GetType().Name}: {exception.Message})");
+        System.Console.Error.WriteLine($"{message} ({exception.GetType().Name}: {exception.Message})");
     }
 }

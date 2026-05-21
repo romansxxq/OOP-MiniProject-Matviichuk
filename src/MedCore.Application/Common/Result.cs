@@ -18,5 +18,5 @@ public class Result<T> : Result
     }
 
     public static Result<T> Success(T value, string msg) => new(true, msg, value);
-    public static Result<T> Failure(string msg) => new(false, msg, default);
+    public new static Result<T> Failure(string msg) => new(false, msg, default);
 }
