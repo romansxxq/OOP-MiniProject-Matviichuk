@@ -2,7 +2,7 @@
 
 Міні-проєкт для керування базовими процесами в лікарні: реєстрація пацієнтів, призначення лікарів до відділень, записи на прийом, пошук і аналітика.
 
-## Основні можливості (Lab 35)
+## Основні можливості
 - Асинхронне збереження/завантаження стану у JSON (data/medcore.json).
 - Мінімум 3 завершені use cases з бізнес-правилами.
 - Strategy + Composite для розширюваної валідації записів.
@@ -27,3 +27,17 @@ dotnet test
 
 ## Дані
 Файл збереження: data/medcore.json. При старті програми виконується спроба завантажити дані; збереження доступне через меню.
+
+## Документація
+- [USER_GUIDE.md](USER_GUIDE.md)
+- [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
+- [TESTING.md](TESTING.md)
+- [CHANGELOG.md](CHANGELOG.md)
+- [DEMO.md](DEMO.md)
+- [FINAL_REPORT.md](FINAL_REPORT.md)
+- [docs/release-plan.md](docs/release-plan.md)
+- [docs/syllabus-coverage.md](docs/syllabus-coverage.md)
+- [docs/presentation.md](docs/presentation.md)
+- [docs/defense-qa.md](docs/defense-qa.md)
+- [docs/test-strategy.md](docs/test-strategy.md)
+- [docs/test-matrix.md](docs/test-matrix.md)
