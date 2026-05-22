@@ -4,6 +4,9 @@ using MedCore.Domain.Interfaces;
 
 namespace MedCore.Application.Services;
 
+/// <summary>
+/// Handles department management and assignments.
+/// </summary>
 public class DepartmentService
 {
     private readonly IRepository<Department, int> _departments;
@@ -15,6 +18,7 @@ public class DepartmentService
         _doctors = doctors;
     }
 
+    /// <summary>Creates a new department.</summary>
     public Result<Department> CreateDepartment(string name, int floor)
     {
         try
@@ -30,6 +34,7 @@ public class DepartmentService
         }
     }
 
+    /// <summary>Assigns a doctor to a department.</summary>
     public Result AssignDoctorToDepartment(int doctorId, int departmentId)
     {
         var doctor = _doctors.GetById(doctorId);

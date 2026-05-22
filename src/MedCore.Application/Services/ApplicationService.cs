@@ -3,6 +3,9 @@ using MedCore.Domain.Entities;
 using MedCore.Domain.Interfaces;
 
 namespace MedCore.Application.Services;
+/// <summary>
+/// Handles appointment lifecycle operations.
+/// </summary>
 public class AppointmentService
 {
     private readonly IAppointmentRepository _appointments;
@@ -25,6 +28,7 @@ public class AppointmentService
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
+    /// <summary>Creates a new appointment if business rules are satisfied.</summary>
     public Result<Appointment> CreateAppointment(int patientId, int doctorId, DateTime time)
     {
         if (time <= _clock.Now)
@@ -55,6 +59,7 @@ public class AppointmentService
         return Result<Appointment>.Success(appointment, "Запис створено.");
     }
 
+    /// <summary>Confirms a pending appointment.</summary>
     public Result ConfirmAppointment(int appointmentId)
     {
         var appointment = _appointments.GetById(appointmentId);
@@ -74,6 +79,7 @@ public class AppointmentService
         return Result.Success("Запис підтверджено.");
     }
 
+    /// <summary>Cancels an appointment.</summary>
     public Result CancelAppointment(int appointmentId)
     {
         var appointment = _appointments.GetById(appointmentId);

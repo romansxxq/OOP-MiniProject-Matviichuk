@@ -6,6 +6,9 @@ using MedCore.Domain.Interfaces;
 
 namespace MedCore.Application.Services;
 
+/// <summary>
+/// Provides read-only queries and analytics.
+/// </summary>
 public class QueryService
 {
     private readonly IAppointmentRepository _appointments;
@@ -25,6 +28,7 @@ public class QueryService
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
+    /// <summary>Returns active (non-cancelled) appointments ordered by time.</summary>
     public IReadOnlyCollection<Appointment> GetActiveAppointments()
     {
         return _appointments.GetAll()
@@ -33,6 +37,7 @@ public class QueryService
             .ToList();
     }
 
+    /// <summary>Returns appointments for a doctor ordered by time.</summary>
     public IReadOnlyCollection<Appointment> GetDoctorAppointments(int doctorId)
     {
         return _appointments.GetAll()
@@ -41,6 +46,7 @@ public class QueryService
             .ToList();
     }
 
+    /// <summary>Searches patients by name and/or medical card fragments.</summary>
     public IReadOnlyCollection<Patient> SearchPatients(string? namePart, string? cardPart)
     {
         var query = _patients.GetAll().AsEnumerable();
@@ -65,6 +71,7 @@ public class QueryService
             .ToList();
     }
 
+    /// <summary>Returns top doctors by appointment count.</summary>
     public IReadOnlyCollection<DoctorAppointmentStat> GetTopDoctorsByAppointments(int top)
     {
         var limit = Math.Max(top, 0);
@@ -77,16 +84,23 @@ public class QueryService
 
         var doctorsById = _doctors.GetAll().ToDictionary(d => d.Id);
 
-        return counts
-            .Where(item => doctorsById.ContainsKey(item.DoctorId))
-            .Select(item => new DoctorAppointmentStat
+        var result = new List<DoctorAppointmentStat>();
+        foreach (var item in counts)
+        {
+            if (!doctorsById.TryGetValue(item.DoctorId, out var doctor))
+                continue;
+
+            result.Add(new DoctorAppointmentStat
             {
-                Doctor = doctorsById[item.DoctorId],
+                Doctor = doctor,
                 Count = item.Count
-            })
-            .ToList();
+            });
+        }
+
+        return result;
     }
 
+    /// <summary>Builds aggregated appointment statistics.</summary>
     public AppointmentStats GetAppointmentStats()
     {
         var appointments = _appointments.GetAll();
