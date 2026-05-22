@@ -2,6 +2,7 @@
 using MedCore.Application.Factories;
 using MedCore.Application.Services;
 using MedCore.Console;
+using MedCore.ConsoleUI;
 using MedCore.Domain.Entities;
 using MedCore.Domain.Interfaces;
 using MedCore.Infrastructure.Repositories;
@@ -97,75 +98,75 @@ void PrintMenu()
 
 void RegisterPatient()
 {
-	var firstName = ReadText("Ім'я: ");
-	var lastName = ReadText("Прізвище: ");
-	var cardNumber = ReadText("Номер медичної картки: ");
+	var firstName = ConsoleInput.ReadText("Ім'я: ", "Поле не може бути порожнім.");
+	var lastName = ConsoleInput.ReadText("Прізвище: ", "Поле не може бути порожнім.");
+	var cardNumber = ConsoleInput.ReadText("Номер медичної картки: ", "Поле не може бути порожнім.");
 
 	var result = patientService.RegisterPatient(firstName, lastName, cardNumber);
-	ShowResult(result);
+	ConsoleOutput.ShowResult(result);
 	if (result.IsSuccess && result.Value is not null)
 		Console.WriteLine($"ID пацієнта: {result.Value.Id}");
 }
 
 void RegisterDoctor()
 {
-	var fullName = ReadText("Повне ім'я: ");
-	var specialization = ReadText("Спеціалізація: ");
+	var fullName = ConsoleInput.ReadText("Повне ім'я: ", "Поле не може бути порожнім.");
+	var specialization = ConsoleInput.ReadText("Спеціалізація: ", "Поле не може бути порожнім.");
 
 	var result = doctorService.RegisterDoctor(fullName, specialization);
-	ShowResult(result);
+	ConsoleOutput.ShowResult(result);
 	if (result.IsSuccess && result.Value is not null)
 		Console.WriteLine($"ID лікаря: {result.Value.Id}");
 }
 
 void CreateDepartment()
 {
-	var name = ReadText("Назва відділення: ");
-	var floor = ReadInt("Поверх: ");
+	var name = ConsoleInput.ReadText("Назва відділення: ", "Поле не може бути порожнім.");
+	var floor = ConsoleInput.ReadInt("Поверх: ", "Введіть коректне число.");
 
 	var result = departmentService.CreateDepartment(name, floor);
-	ShowResult(result);
+	ConsoleOutput.ShowResult(result);
 	if (result.IsSuccess && result.Value is not null)
 		Console.WriteLine($"ID відділення: {result.Value.Id}");
 }
 
 void AssignDoctor()
 {
-	var doctorId = ReadInt("ID лікаря: ");
-	var departmentId = ReadInt("ID відділення: ");
+	var doctorId = ConsoleInput.ReadInt("ID лікаря: ", "Введіть коректне число.");
+	var departmentId = ConsoleInput.ReadInt("ID відділення: ", "Введіть коректне число.");
 
 	var result = departmentService.AssignDoctorToDepartment(doctorId, departmentId);
-	ShowResult(result);
+	ConsoleOutput.ShowResult(result);
 }
 
 void CreateAppointment()
 {
-	var patientId = ReadInt("ID пацієнта: ");
-	var doctorId = ReadInt("ID лікаря: ");
-	var time = ReadDateTime("Дата і час (наприклад 2026-05-11 14:30): ");
+	var patientId = ConsoleInput.ReadInt("ID пацієнта: ", "Введіть коректне число.");
+	var doctorId = ConsoleInput.ReadInt("ID лікаря: ", "Введіть коректне число.");
+	var time = ConsoleInput.ReadDateTime("Дата і час (наприклад 2026-05-11 14:30): ", "Некоректний формат дати.");
 
 	var result = appointmentService.CreateAppointment(patientId, doctorId, time);
-	ShowResult(result);
+	ConsoleOutput.ShowResult(result);
 	if (result.IsSuccess && result.Value is not null)
 		Console.WriteLine($"ID запису: {result.Value.Id}");
 }
 
 void ConfirmAppointment()
 {
-	var appointmentId = ReadInt("ID запису: ");
-	ShowResult(appointmentService.ConfirmAppointment(appointmentId));
+	var appointmentId = ConsoleInput.ReadInt("ID запису: ", "Введіть коректне число.");
+	ConsoleOutput.ShowResult(appointmentService.ConfirmAppointment(appointmentId));
 }
 
 void CancelAppointment()
 {
-	var appointmentId = ReadInt("ID запису: ");
-	ShowResult(appointmentService.CancelAppointment(appointmentId));
+	var appointmentId = ConsoleInput.ReadInt("ID запису: ", "Введіть коректне число.");
+	ConsoleOutput.ShowResult(appointmentService.CancelAppointment(appointmentId));
 }
 
 void SaveData()
 {
 	var result = persistenceService.SaveAsync().GetAwaiter().GetResult();
-	ShowResult(result);
+	ConsoleOutput.ShowResult(result);
 }
 
 void HandleQueries()
@@ -186,16 +187,16 @@ void HandleQueries()
 		{
 			case "1":
 				var active = queryService.GetActiveAppointments();
-				PrintAppointments(active);
+				ConsoleOutput.PrintAppointments(active, patientRepo, doctorRepo);
 				break;
 			case "2":
-				var doctorId = ReadInt("ID лікаря: ");
+				var doctorId = ConsoleInput.ReadInt("ID лікаря: ", "Введіть коректне число.");
 				var schedule = queryService.GetDoctorAppointments(doctorId);
-				PrintAppointments(schedule);
+				ConsoleOutput.PrintAppointments(schedule, patientRepo, doctorRepo);
 				break;
 			case "3":
-				var name = ReadOptionalText("Фрагмент імені (опціонально): ");
-				var card = ReadOptionalText("Фрагмент картки (опціонально): ");
+				var name = ConsoleInput.ReadOptionalText("Фрагмент імені (опціонально): ");
+				var card = ConsoleInput.ReadOptionalText("Фрагмент картки (опціонально): ");
 				var patients = queryService.SearchPatients(name, card);
 				foreach (var patient in patients)
 				{
@@ -203,7 +204,7 @@ void HandleQueries()
 				}
 				break;
 			case "4":
-				var top = ReadInt("Скільки показати: ");
+				var top = ConsoleInput.ReadInt("Скільки показати: ", "Введіть коректне число.");
 				var topDoctors = queryService.GetTopDoctorsByAppointments(top);
 				foreach (var item in topDoctors)
 				{
@@ -225,68 +226,4 @@ void HandleQueries()
 				break;
 		}
 	}
-}
-
-void PrintAppointments(IEnumerable<Appointment> appointments)
-{
-	foreach (var appointment in appointments)
-	{
-		var patient = patientRepo.GetById(appointment.PatientId);
-		var doctor = doctorRepo.GetById(appointment.DoctorId);
-		var patientName = patient is null ? $"#{appointment.PatientId}" : patient.Name.ToString();
-		var doctorName = doctor is null ? $"#{appointment.DoctorId}" : doctor.Name.ToString();
-
-		Console.WriteLine($"{appointment.Id}: {appointment.AppointmentTime:g} | {patientName} -> {doctorName} | {appointment.Status}");
-	}
-}
-
-void ShowResult(MedCore.Application.Common.Result result)
-{
-	Console.WriteLine(result.Message);
-}
-
-int ReadInt(string prompt)
-{
-	while (true)
-	{
-		Console.Write(prompt);
-		var input = Console.ReadLine();
-		if (int.TryParse(input, out var value))
-			return value;
-
-		Console.WriteLine("Введіть коректне число.");
-	}
-}
-
-DateTime ReadDateTime(string prompt)
-{
-	while (true)
-	{
-		Console.Write(prompt);
-		var input = Console.ReadLine();
-		if (DateTime.TryParse(input, out var value))
-			return value;
-
-		Console.WriteLine("Некоректний формат дати.");
-	}
-}
-
-string ReadText(string prompt)
-{
-	while (true)
-	{
-		Console.Write(prompt);
-		var input = Console.ReadLine();
-		if (!string.IsNullOrWhiteSpace(input))
-			return input.Trim();
-
-		Console.WriteLine("Поле не може бути порожнім.");
-	}
-}
-
-string? ReadOptionalText(string prompt)
-{
-	Console.Write(prompt);
-	var input = Console.ReadLine();
-	return string.IsNullOrWhiteSpace(input) ? null : input.Trim();
 }
