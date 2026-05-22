@@ -9,8 +9,6 @@ using MedCore.Infrastructure.Repositories;
 using MedCore.Infrastructure.Strategies;
 using MedCore.Infrastructure.Stores;
 
-Console.WriteLine("=== MedCore: Ітерація 2 ===\n");
-
 var appointmentRepo = new InMemoryAppointmentRepository();
 var patientRepo = new InMemoryRepository<Patient, int>();
 var doctorRepo = new InMemoryRepository<Doctor, int>();
