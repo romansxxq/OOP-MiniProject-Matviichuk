@@ -8,6 +8,10 @@ using MedCore.Domain.Interfaces;
 using MedCore.Infrastructure.Repositories;
 using MedCore.Infrastructure.Strategies;
 using MedCore.Infrastructure.Stores;
+using System.Text;
+
+Console.OutputEncoding = Encoding.UTF8;
+Console.InputEncoding = Encoding.UTF8;
 
 var appointmentRepo = new InMemoryAppointmentRepository();
 var patientRepo = new InMemoryRepository<Patient, int>();
