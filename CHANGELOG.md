@@ -1,23 +1,21 @@
-# Changelog
-All notable changes to this project will be documented in this file.
+# Change log
+Усі помітні зміни цього проєкту документуються в цьому файлі.
 
-The format is based on Keep a Changelog, and this project follows Semantic Versioning.
+Формат базується на Keep a Changelog, і цей проєкт дотримується Semantic Versioning.
 
-## [Unreleased]
+## [1.0] - 2026-05-255
+### Додано
+- Реєстрація пацієнтів, керування лікарями/відділеннями, життєвий цикл записів на прийом.
+- Правила валідації Strategy + Composite.
+- JSON-збереження з асинхронним завантаженням/збереженням.
+- LINQ-запити та аналітика.
+- Консольний UI з окремими допоміжними класами вводу/виводу.
+- Стратегія тестування, матриця та покриття у CI.
+- Добавлено UTC-8 для коректного відображення української локалізації
+### Змінено
+- Репозиторії узагальнено через `IRepository<T, TId>`.
+- Валідація записів використовує кілька стратегій.
 
-## [1.0.0] - 2026-05-22
-### Added
-- Patient registration, doctor/department management, appointment lifecycle.
-- Strategy + Composite validation rules.
-- JSON persistence with async load/save.
-- LINQ queries and analytics.
-- Console UI with separated input/output helpers.
-- Test strategy, matrix, and CI coverage.
-
-### Changed
-- Repositories generalized with `IRepository<T, TId>`.
-- Appointment validation uses multiple strategies.
-
-### Fixed
-- Data validation on load (duplicate IDs, missing links).
-- Validation ignores cancelled appointments.
+### Виправлено
+- Валідація даних під час завантаження (дублікати ID, відсутні зв'язки).
+- Валідація ігнорує скасовані записи.
