@@ -38,64 +38,58 @@ var errorReporter = new ConsoleErrorReporter();
 var persistenceService = new PersistenceService(dataStore, patientRepo, doctorRepo, nurseRepo, departmentRepo, appointmentRepo, errorReporter);
 
 var loadResult = await persistenceService.LoadAsync();
-Console.WriteLine(loadResult.Message);
+ConsoleOutput.ShowResult(loadResult);
+
+var mainMenuOptions = new[]
+{
+	"Реєстрація пацієнта",
+	"Додати лікаря",
+	"Створити відділення",
+	"Призначити лікаря до відділення",
+	"Створити запис на прийом",
+	"Підтвердити запис",
+	"Скасувати запис",
+	"Запити та аналітика",
+	"Зберегти дані",
+	"Вийти"
+};
 
 while (true)
 {
-	PrintMenu();
-	var choice = Console.ReadLine();
+	var choice = ConsoleInput.ReadMenu("Головне меню", mainMenuOptions);
 
 	switch (choice)
 	{
-		case "1":
+		case "Реєстрація пацієнта":
 			RegisterPatient();
 			break;
-		case "2":
+		case "Додати лікаря":
 			RegisterDoctor();
 			break;
-		case "3":
+		case "Створити відділення":
 			CreateDepartment();
 			break;
-		case "4":
+		case "Призначити лікаря до відділення":
 			AssignDoctor();
 			break;
-		case "5":
+		case "Створити запис на прийом":
 			CreateAppointment();
 			break;
-		case "6":
+		case "Підтвердити запис":
 			ConfirmAppointment();
 			break;
-		case "7":
+		case "Скасувати запис":
 			CancelAppointment();
 			break;
-		case "8":
+		case "Запити та аналітика":
 			HandleQueries();
 			break;
-		case "9":
+		case "Зберегти дані":
 			SaveData();
 			break;
-		case "0":
+		case "Вийти":
 			return;
-		default:
-			Console.WriteLine("Невірний вибір.");
-			break;
 	}
-}
-
-void PrintMenu()
-{
-	Console.WriteLine();
-	Console.WriteLine("1. Реєстрація пацієнта");
-	Console.WriteLine("2. Додати лікаря");
-	Console.WriteLine("3. Створити відділення");
-	Console.WriteLine("4. Призначити лікаря до відділення");
-	Console.WriteLine("5. Створити запис на прийом");
-	Console.WriteLine("6. Підтвердити запис");
-	Console.WriteLine("7. Скасувати запис");
-	Console.WriteLine("8. Запити та аналітика");
-	Console.WriteLine("9. Зберегти дані");
-	Console.WriteLine("0. Вийти");
-	Console.Write("Ваш вибір: ");
 }
 
 void RegisterPatient()
@@ -173,59 +167,47 @@ void SaveData()
 
 void HandleQueries()
 {
+	var queryMenuOptions = new[]
+	{
+		"Активні записи",
+		"Розклад лікаря",
+		"Пошук пацієнтів",
+		"Топ лікарів за кількістю записів",
+		"Статистика записів",
+		"Назад"
+	};
+
 	while (true)
 	{
-		Console.WriteLine();
-		Console.WriteLine("1. Активні записи");
-		Console.WriteLine("2. Розклад лікаря");
-		Console.WriteLine("3. Пошук пацієнтів");
-		Console.WriteLine("4. Топ лікарів за кількістю записів");
-		Console.WriteLine("5. Статистика записів");
-		Console.WriteLine("0. Назад");
-		Console.Write("Ваш вибір: ");
-
-		var choice = Console.ReadLine();
+		var choice = ConsoleInput.ReadMenu("Запити та аналітика", queryMenuOptions);
 		switch (choice)
 		{
-			case "1":
+			case "Активні записи":
 				var active = queryService.GetActiveAppointments();
 				ConsoleOutput.PrintAppointments(active, patientRepo, doctorRepo);
 				break;
-			case "2":
+			case "Розклад лікаря":
 				var doctorId = ConsoleInput.ReadInt("ID лікаря: ", "Введіть коректне число.");
 				var schedule = queryService.GetDoctorAppointments(doctorId);
 				ConsoleOutput.PrintAppointments(schedule, patientRepo, doctorRepo);
 				break;
-			case "3":
+			case "Пошук пацієнтів":
 				var name = ConsoleInput.ReadOptionalText("Фрагмент імені (опціонально): ");
 				var card = ConsoleInput.ReadOptionalText("Фрагмент картки (опціонально): ");
 				var patients = queryService.SearchPatients(name, card);
-				foreach (var patient in patients)
-				{
-					Console.WriteLine($"{patient.Id}: {patient.Name} | {patient.MedicalCardNumber}");
-				}
+				ConsoleOutput.PrintPatients(patients);
 				break;
-			case "4":
+			case "Топ лікарів за кількістю записів":
 				var top = ConsoleInput.ReadInt("Скільки показати: ", "Введіть коректне число.");
 				var topDoctors = queryService.GetTopDoctorsByAppointments(top);
-				foreach (var item in topDoctors)
-				{
-					Console.WriteLine($"{item.Doctor.Id}: {item.Doctor.Name} | записів: {item.Count}");
-				}
+				ConsoleOutput.PrintTopDoctors(topDoctors);
 				break;
-			case "5":
+			case "Статистика записів":
 				var stats = queryService.GetAppointmentStats();
-				Console.WriteLine($"Всього: {stats.Total}");
-				Console.WriteLine($"Нові: {stats.NewCount}");
-				Console.WriteLine($"Підтверджені: {stats.ConfirmedCount}");
-				Console.WriteLine($"Скасовані: {stats.CancelledCount}");
-				Console.WriteLine($"Майбутні активні: {stats.UpcomingCount}");
+				ConsoleOutput.PrintAppointmentStats(stats);
 				break;
-			case "0":
+			case "Назад":
 				return;
-			default:
-				Console.WriteLine("Невірний вибір.");
-				break;
 		}
 	}
 }

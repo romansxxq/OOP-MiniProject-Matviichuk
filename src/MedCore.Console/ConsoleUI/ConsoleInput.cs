@@ -1,50 +1,52 @@
+using Spectre.Console;
+
 namespace MedCore.ConsoleUI;
 
 public static class ConsoleInput
 {
     public static int ReadInt(string prompt, string errorMessage)
     {
-        while (true)
-        {
-            System.Console.Write(prompt);
-            var input = System.Console.ReadLine();
-            if (int.TryParse(input, out var value))
-                return value;
+        var input = AnsiConsole.Prompt(
+            new TextPrompt<string>(prompt)
+                .ValidationErrorMessage(errorMessage)
+                .Validate(value => int.TryParse(value, out _)
+                    ? ValidationResult.Success()
+                    : ValidationResult.Error(errorMessage)));
 
-            System.Console.WriteLine(errorMessage);
-        }
+        return int.Parse(input);
     }
 
     public static DateTime ReadDateTime(string prompt, string errorMessage)
     {
-        while (true)
-        {
-            System.Console.Write(prompt);
-            var input = System.Console.ReadLine();
-            if (DateTime.TryParse(input, out var value))
-                return value;
-
-            System.Console.WriteLine(errorMessage);
-        }
+        return AnsiConsole.Prompt(
+            new TextPrompt<DateTime>(prompt)
+                .ValidationErrorMessage(errorMessage));
     }
 
     public static string ReadText(string prompt, string errorMessage)
     {
-        while (true)
-        {
-            System.Console.Write(prompt);
-            var input = System.Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(input))
-                return input.Trim();
+        var value = AnsiConsole.Prompt(
+            new TextPrompt<string>(prompt)
+                .ValidationErrorMessage(errorMessage)
+                .Validate(input => !string.IsNullOrWhiteSpace(input)
+                    ? ValidationResult.Success()
+                    : ValidationResult.Error(errorMessage)));
 
-            System.Console.WriteLine(errorMessage);
-        }
+        return value.Trim();
     }
 
     public static string? ReadOptionalText(string prompt)
     {
-        System.Console.Write(prompt);
-        var input = System.Console.ReadLine();
-        return string.IsNullOrWhiteSpace(input) ? null : input.Trim();
+        var value = AnsiConsole.Prompt(new TextPrompt<string>(prompt).AllowEmpty());
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    public static string ReadMenu(string title, IEnumerable<string> options)
+    {
+        return AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title(title)
+                .PageSize(10)
+                .AddChoices(options));
     }
 }
