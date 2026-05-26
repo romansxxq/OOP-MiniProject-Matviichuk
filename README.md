@@ -1,5 +1,7 @@
 # MedCore
 
+[![CI](https://github.com/romansxxq/OOP-MiniProject-Matviichuk/actions/workflows/main.yml/badge.svg)](https://github.com/romansxxq/OOP-MiniProject-Matviichuk/actions/workflows/main.yml)
+
 Навчальний міні-проєкт для керування базовими процесами в лікарні: реєстрація пацієнтів, призначення лікарів до відділень, записи на прийом, пошук і аналітика.
 
 ## Основні можливості
