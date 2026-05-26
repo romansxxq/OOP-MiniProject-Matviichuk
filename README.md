@@ -29,7 +29,10 @@ dotnet test
 Файл збереження: data/medcore.json. При старті програми виконується спроба завантажити дані; збереження доступне через меню.
 
 ## Скріншоти
-
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
 ## Документація
 - [USER_GUIDE.md](USER_GUIDE.md)
 - [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
