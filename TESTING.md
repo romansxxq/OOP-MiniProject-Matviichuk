@@ -1,4 +1,4 @@
-# Testing
+# TESTING
 
 ## Запуск усіх тестів
 ```bash
@@ -21,6 +21,10 @@ reportgenerator -reports:**/coverage.opencover.xml -targetdir:coverage-report
 dotnet test --filter Category=Integration
 ```
 
+## Додаткова документація
+- Test Strategy: docs/test-strategy.md.
+- Test Matrix: docs/test-matrix.md.
+
 ## Примітки
 - Інтеграційні тести використовують тимчасові файли та не потребують ручної підготовки даних.
-- Для CI використовується збір покриття у форматі opencover..
+- Для CI використовується збір покриття у форматі opencover.

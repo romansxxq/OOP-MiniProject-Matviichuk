@@ -7,6 +7,9 @@ using MedCore.Domain.Interfaces;
 
 namespace MedCore.Application.Services;
 
+/// <summary>
+/// Coordinates loading and saving application state.
+/// </summary>
 public class PersistenceService
 {
     private readonly IDataStore<MedCoreData> _store;
@@ -35,6 +38,7 @@ public class PersistenceService
         _errorReporter = errorReporter ?? new NullErrorReporter();
     }
 
+    /// <summary>Loads state from storage and replaces repositories.</summary>
     public async Task<Result> LoadAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -69,6 +73,7 @@ public class PersistenceService
         }
     }
 
+    /// <summary>Persists current repositories to storage.</summary>
     public async Task<Result> SaveAsync(CancellationToken cancellationToken = default)
     {
         var data = new MedCoreData

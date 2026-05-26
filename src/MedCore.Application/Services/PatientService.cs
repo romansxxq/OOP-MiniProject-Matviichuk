@@ -5,6 +5,9 @@ using MedCore.Domain.ValueObjects;
 
 namespace MedCore.Application.Services;
 
+/// <summary>
+/// Handles patient registration workflow.
+/// </summary>
 public class PatientService
 {
     private readonly IRepository<Patient, int> _patients;
@@ -14,6 +17,7 @@ public class PatientService
         _patients = patients;
     }
 
+    /// <summary>Registers a new patient with a unique medical card number.</summary>
     public Result<Patient> RegisterPatient(string firstName, string lastName, string medicalCardNumber)
     {
         if (string.IsNullOrWhiteSpace(medicalCardNumber))
