@@ -9,6 +9,7 @@ using MedCore.Infrastructure.Repositories;
 using MedCore.Infrastructure.Strategies;
 using MedCore.Infrastructure.Stores;
 using System.Text;
+using Spectre.Console;
 
 Console.OutputEncoding = Encoding.UTF8;
 Console.InputEncoding = Encoding.UTF8;
@@ -37,8 +38,15 @@ var dataStore = new JsonFileDataStore(Path.Combine("data", "medcore.json"));
 var errorReporter = new ConsoleErrorReporter();
 var persistenceService = new PersistenceService(dataStore, patientRepo, doctorRepo, nurseRepo, departmentRepo, appointmentRepo, errorReporter);
 
-var loadResult = await persistenceService.LoadAsync();
-ConsoleOutput.ShowResult(loadResult);
+
+// Показати прогрес-індикатор під час завантаження даних
+Spectre.Console.AnsiConsole.Status()
+    .Spinner(Spectre.Console.Spinner.Known.Dots)
+    .Start("[yellow]Завантаження даних...[/]", ctx =>
+    {
+        var loadResult = persistenceService.LoadAsync().GetAwaiter().GetResult();
+        ConsoleOutput.ShowResult(loadResult);
+    });
 
 var mainMenuOptions = new[]
 {
