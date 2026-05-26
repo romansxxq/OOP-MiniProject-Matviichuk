@@ -3,9 +3,9 @@ name: MedCore CI Pipeline
 # CI буде запускатися при кожному push або pull request у гілку main
 on:
   push:
-    branches: [ "main", "master", "lab37" ]
+    branches: [ "main", "master", "lab37-realase" ]
   pull_request:
-    branches: [ "main", "master", "lab37" ]
+    branches: [ "main", "master", "lab37-realase" ]
 
 permissions:
   contents: write
