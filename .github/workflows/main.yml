@@ -58,13 +58,15 @@ jobs:
       run: dotnet publish src/MedCore.Console/MedCore.Console.csproj --configuration Release --runtime win-x64 --self-contained false --output publish/MedCore.Console
 
     - name: Package Publish Output
-      run: tar -czf medcore-publish.tar.gz -C publish .
+      run: |
+        cd publish
+        zip -r ../medcore-publish.zip .
 
     - name: Upload Publish Artifact
       uses: actions/upload-artifact@v4
       with:
         name: medcore-publish
-        path: medcore-publish.tar.gz
+        path: medcore-publish.zip
 
     - name: Create or Update GitHub Release
       env:
@@ -72,7 +74,7 @@ jobs:
       run: |
         TAG="build-${{ github.run_number }}"
         if gh release view "$TAG" >/dev/null 2>&1; then
-          gh release upload "$TAG" medcore-publish.tar.gz --clobber
+          gh release upload "$TAG" medcore-publish.zip --clobber
         else
-          gh release create "$TAG" medcore-publish.tar.gz --title "Build $TAG" --notes "Automated build from $GITHUB_SHA" --target "$GITHUB_SHA"
+          gh release create "$TAG" medcore-publish.zip --title "Build $TAG" --notes "Automated build from $GITHUB_SHA" --target "$GITHUB_SHA"
         fi
