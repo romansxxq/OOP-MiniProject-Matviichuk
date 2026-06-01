@@ -54,19 +54,29 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Publish Console App
-      run: dotnet publish src/MedCore.Console/MedCore.Console.csproj --configuration Release --runtime win-x64 --self-contained false --output publish/MedCore.Console
+    - name: Publish win-x64
+      run: dotnet publish src/MedCore.Console/MedCore.Console.csproj --configuration Release --runtime win-x64 --self-contained false --output publish/win-x64
+
+    - name: Publish linux-arm64
+      run: dotnet publish src/MedCore.Console/MedCore.Console.csproj --configuration Release --runtime linux-arm64 --self-contained true --output publish/linux-arm64
+
+    - name: Publish win-arm64
+      run: dotnet publish src/MedCore.Console/MedCore.Console.csproj --configuration Release --runtime win-arm64 --self-contained false --output publish/win-arm64
 
     - name: Package Publish Output
       run: |
-        cd publish
-        zip -r ../medcore-publish.zip .
+        zip -r medcore-win-x64.zip publish/win-x64
+        zip -r medcore-linux-arm64.zip publish/linux-arm64
+        zip -r medcore-win-arm64.zip publish/win-arm64
 
     - name: Upload Publish Artifact
       uses: actions/upload-artifact@v4
       with:
         name: medcore-publish
-        path: medcore-publish.zip
+        path: |
+          medcore-win-x64.zip
+          medcore-linux-arm64.zip
+          medcore-win-arm64.zip
 
     - name: Create or Update GitHub Release
       env:
@@ -74,7 +84,7 @@ jobs:
       run: |
         TAG="build-${{ github.run_number }}"
         if gh release view "$TAG" >/dev/null 2>&1; then
-          gh release upload "$TAG" medcore-publish.zip --clobber
+          gh release upload "$TAG" medcore-win-x64.zip medcore-linux-arm64.zip medcore-win-arm64.zip --clobber
         else
-          gh release create "$TAG" medcore-publish.zip --title "Build $TAG" --notes "Automated build from $GITHUB_SHA" --target "$GITHUB_SHA"
+          gh release create "$TAG" medcore-win-x64.zip medcore-linux-arm64.zip medcore-win-arm64.zip --title "Build $TAG" --notes "Automated build from $GITHUB_SHA" --target "$GITHUB_SHA"
         fi
