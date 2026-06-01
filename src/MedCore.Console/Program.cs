@@ -29,7 +29,8 @@ IValidationStrategy validationStrategy = new CompositeValidationStrategy(new IVa
 var clock = new SystemClock();
 var appointmentService = new AppointmentService(appointmentRepo, patientRepo, doctorRepo, validationStrategy, clock);
 var patientService = new PatientService(patientRepo);
-var doctorService = new DoctorService(doctorRepo, new DoctorFactory());
+var doctorFactory = new DoctorFactory();
+var doctorService = new DoctorService(doctorRepo, doctorFactory);
 var departmentService = new DepartmentService(departmentRepo, doctorRepo);
 var queryService = new QueryService(appointmentRepo, patientRepo, doctorRepo, clock);
 
@@ -189,12 +190,12 @@ void HandleQueries()
 		{
 			case "Активні записи":
 				var active = queryService.GetActiveAppointments();
-				ConsoleOutput.PrintAppointments(active, patientRepo, doctorRepo);
+				ConsoleOutput.PrintAppointments(active);
 				break;
 			case "Розклад лікаря":
 				var doctorId = ConsoleInput.ReadInt("ID лікаря: ", "Введіть коректне число.");
 				var schedule = queryService.GetDoctorAppointments(doctorId);
-				ConsoleOutput.PrintAppointments(schedule, patientRepo, doctorRepo);
+				ConsoleOutput.PrintAppointments(schedule);
 				break;
 			case "Пошук пацієнтів":
 				var name = ConsoleInput.ReadOptionalText("Фрагмент імені (опціонально): ");

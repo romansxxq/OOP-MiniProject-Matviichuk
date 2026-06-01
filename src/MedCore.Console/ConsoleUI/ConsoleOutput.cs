@@ -1,7 +1,6 @@
 using MedCore.Application.Common;
 using MedCore.Application.Models;
 using MedCore.Domain.Entities;
-using MedCore.Domain.Interfaces;
 using Spectre.Console;
 
 namespace MedCore.ConsoleUI;
@@ -14,10 +13,7 @@ public static class ConsoleOutput
         AnsiConsole.MarkupLine($"[{color}]{Markup.Escape(result.Message)}[/]");
     }
 
-    public static void PrintAppointments(
-        IEnumerable<Appointment> appointments,
-        IRepository<Patient, int> patientRepo,
-        IRepository<Doctor, int> doctorRepo)
+    public static void PrintAppointments(IEnumerable<AppointmentView> appointments)
     {
         var list = appointments.ToList();
         if (list.Count == 0)
@@ -36,17 +32,12 @@ public static class ConsoleOutput
 
         foreach (var appointment in list)
         {
-            var patient = patientRepo.GetById(appointment.PatientId);
-            var doctor = doctorRepo.GetById(appointment.DoctorId);
-            var patientName = patient is null ? $"#{appointment.PatientId}" : patient.Name.ToString();
-            var doctorName = doctor is null ? $"#{appointment.DoctorId}" : doctor.Name.ToString();
-
             table.AddRow(
                 appointment.Id.ToString(),
                 appointment.AppointmentTime.ToString("g"),
-                Markup.Escape(patientName),
-                Markup.Escape(doctorName),
-                Markup.Escape(appointment.Status.ToString()));
+                Markup.Escape(appointment.PatientName),
+                Markup.Escape(appointment.DoctorName),
+                Markup.Escape(appointment.Status));
         }
 
         AnsiConsole.Write(table);

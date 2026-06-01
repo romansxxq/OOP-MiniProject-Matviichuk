@@ -29,21 +29,37 @@ public class QueryService
     }
 
     /// <summary>Returns active (non-cancelled) appointments ordered by time.</summary>
-    public IReadOnlyCollection<Appointment> GetActiveAppointments()
+    public IReadOnlyCollection<AppointmentView> GetActiveAppointments()
     {
         return _appointments.GetAll()
             .Where(a => a.Status != AppointmentStatus.Cancelled)
             .OrderBy(a => a.AppointmentTime)
+            .Select(ToView)
             .ToList();
     }
 
     /// <summary>Returns appointments for a doctor ordered by time.</summary>
-    public IReadOnlyCollection<Appointment> GetDoctorAppointments(int doctorId)
+    public IReadOnlyCollection<AppointmentView> GetDoctorAppointments(int doctorId)
     {
         return _appointments.GetAll()
             .Where(a => a.DoctorId == doctorId)
             .OrderBy(a => a.AppointmentTime)
+            .Select(ToView)
             .ToList();
+    }
+
+    private AppointmentView ToView(Appointment a)
+    {
+        var patient = _patients.GetById(a.PatientId);
+        var doctor = _doctors.GetById(a.DoctorId);
+        return new AppointmentView
+        {
+            Id = a.Id,
+            AppointmentTime = a.AppointmentTime,
+            PatientName = patient is null ? $"#{a.PatientId}" : patient.Name.ToString(),
+            DoctorName = doctor is null ? $"#{a.DoctorId}" : doctor.Name.ToString(),
+            Status = a.Status.ToString()
+        };
     }
 
     /// <summary>Searches patients by name and/or medical card fragments.</summary>
