@@ -37,7 +37,7 @@ public class QueryServiceTests
         var active = service.GetActiveAppointments().ToList();
 
         Assert.Equal(2, active.Count);
-        Assert.DoesNotContain(active, a => a.Status == AppointmentStatus.Cancelled);
+        Assert.DoesNotContain(active, a => a.Status == AppointmentStatus.Cancelled.ToString());
         Assert.Equal(second.Id, active[0].Id);
         Assert.Equal(first.Id, active[1].Id);
     }
