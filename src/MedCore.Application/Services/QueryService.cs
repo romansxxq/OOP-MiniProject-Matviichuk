@@ -6,6 +6,9 @@ using MedCore.Domain.Interfaces;
 
 namespace MedCore.Application.Services;
 
+/// <summary>
+/// Provides read-only queries and analytics.
+/// </summary>
 public class QueryService
 {
     private readonly IAppointmentRepository _appointments;
@@ -25,22 +28,41 @@ public class QueryService
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
-    public IReadOnlyCollection<Appointment> GetActiveAppointments()
+    /// <summary>Returns active (non-cancelled) appointments ordered by time.</summary>
+    public IReadOnlyCollection<AppointmentView> GetActiveAppointments()
     {
         return _appointments.GetAll()
             .Where(a => a.Status != AppointmentStatus.Cancelled)
             .OrderBy(a => a.AppointmentTime)
+            .Select(ToView)
             .ToList();
     }
 
-    public IReadOnlyCollection<Appointment> GetDoctorAppointments(int doctorId)
+    /// <summary>Returns appointments for a doctor ordered by time.</summary>
+    public IReadOnlyCollection<AppointmentView> GetDoctorAppointments(int doctorId)
     {
         return _appointments.GetAll()
             .Where(a => a.DoctorId == doctorId)
             .OrderBy(a => a.AppointmentTime)
+            .Select(ToView)
             .ToList();
     }
 
+    private AppointmentView ToView(Appointment a)
+    {
+        var patient = _patients.GetById(a.PatientId);
+        var doctor = _doctors.GetById(a.DoctorId);
+        return new AppointmentView
+        {
+            Id = a.Id,
+            AppointmentTime = a.AppointmentTime,
+            PatientName = patient is null ? $"#{a.PatientId}" : patient.Name.ToString(),
+            DoctorName = doctor is null ? $"#{a.DoctorId}" : doctor.Name.ToString(),
+            Status = a.Status.ToString()
+        };
+    }
+
+    /// <summary>Searches patients by name and/or medical card fragments.</summary>
     public IReadOnlyCollection<Patient> SearchPatients(string? namePart, string? cardPart)
     {
         var query = _patients.GetAll().AsEnumerable();
@@ -65,6 +87,7 @@ public class QueryService
             .ToList();
     }
 
+    /// <summary>Returns top doctors by appointment count.</summary>
     public IReadOnlyCollection<DoctorAppointmentStat> GetTopDoctorsByAppointments(int top)
     {
         var limit = Math.Max(top, 0);
@@ -77,16 +100,23 @@ public class QueryService
 
         var doctorsById = _doctors.GetAll().ToDictionary(d => d.Id);
 
-        return counts
-            .Where(item => doctorsById.ContainsKey(item.DoctorId))
-            .Select(item => new DoctorAppointmentStat
+        var result = new List<DoctorAppointmentStat>();
+        foreach (var item in counts)
+        {
+            if (!doctorsById.TryGetValue(item.DoctorId, out var doctor))
+                continue;
+
+            result.Add(new DoctorAppointmentStat
             {
-                Doctor = doctorsById[item.DoctorId],
+                Doctor = doctor,
                 Count = item.Count
-            })
-            .ToList();
+            });
+        }
+
+        return result;
     }
 
+    /// <summary>Builds aggregated appointment statistics.</summary>
     public AppointmentStats GetAppointmentStats()
     {
         var appointments = _appointments.GetAll();

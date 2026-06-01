@@ -5,6 +5,9 @@ using MedCore.Domain.Interfaces;
 
 namespace MedCore.Application.Services;
 
+/// <summary>
+/// Handles doctor registration workflow.
+/// </summary>
 public class DoctorService
 {
     private readonly IRepository<Doctor, int> _doctors;
@@ -16,6 +19,7 @@ public class DoctorService
         _factory = factory;
     }
 
+    /// <summary>Registers a new doctor using the staff factory.</summary>
     public Result<Doctor> RegisterDoctor(string fullName, string specialization)
     {
         try

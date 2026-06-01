@@ -3,12 +3,15 @@ name: MedCore CI Pipeline
 # CI буде запускатися при кожному push або pull request у гілку main
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "lab37-realase" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "lab37-realase" ]
+
+permissions:
+  contents: write
 
 jobs:
-  build-and-test:
+  build-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,3 +37,54 @@ jobs:
         export PATH="$PATH:$HOME/.dotnet/tools"
         reportgenerator -reports:**/coverage.opencover.xml -targetdir:coverage-report -reporttypes:TextSummary
         cat coverage-report/Summary.txt
+
+  publish:
+    needs: build-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/lab37-realase')
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '11.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Publish win-x64
+      run: dotnet publish src/MedCore.Console/MedCore.Console.csproj --configuration Release --runtime win-x64 --self-contained false --output publish/win-x64
+
+    - name: Publish linux-arm64
+      run: dotnet publish src/MedCore.Console/MedCore.Console.csproj --configuration Release --runtime linux-arm64 --self-contained true --output publish/linux-arm64
+
+    - name: Publish win-arm64
+      run: dotnet publish src/MedCore.Console/MedCore.Console.csproj --configuration Release --runtime win-arm64 --self-contained false --output publish/win-arm64
+
+    - name: Package Publish Output
+      run: |
+        zip -r medcore-win-x64.zip publish/win-x64
+        zip -r medcore-linux-arm64.zip publish/linux-arm64
+        zip -r medcore-win-arm64.zip publish/win-arm64
+
+    - name: Upload Publish Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: medcore-publish
+        path: |
+          medcore-win-x64.zip
+          medcore-linux-arm64.zip
+          medcore-win-arm64.zip
+
+    - name: Create or Update GitHub Release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        TAG="build-${{ github.run_number }}"
+        if gh release view "$TAG" >/dev/null 2>&1; then
+          gh release upload "$TAG" medcore-win-x64.zip medcore-linux-arm64.zip medcore-win-arm64.zip --clobber
+        else
+          gh release create "$TAG" medcore-win-x64.zip medcore-linux-arm64.zip medcore-win-arm64.zip --title "Build $TAG" --notes "Automated build from $GITHUB_SHA" --target "$GITHUB_SHA"
+        fi
