@@ -7,15 +7,16 @@ namespace MedCore.Infrastructure.Stores;
 public class JsonFileDataStore : IDataStore<MedCoreData>
 {
     private readonly string _filePath;
-    private readonly JsonSerializerOptions _options = new()
-    {
-        WriteIndented = true,
-        PropertyNameCaseInsensitive = true
-    };
+    private readonly JsonSerializerOptions _options;
 
-    public JsonFileDataStore(string filePath)
+    public JsonFileDataStore(string filePath, JsonSerializerOptions? options = null)
     {
         _filePath = filePath;
+        _options = options ?? new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true
+        };
     }
 
     public async Task<MedCoreData> LoadAsync(CancellationToken cancellationToken = default)

@@ -33,7 +33,12 @@ var doctorService = new DoctorService(doctorRepo, new DoctorFactory());
 var departmentService = new DepartmentService(departmentRepo, doctorRepo);
 var queryService = new QueryService(appointmentRepo, patientRepo, doctorRepo, clock);
 
-var dataStore = new JsonFileDataStore(Path.Combine("data", "medcore.json"));
+var jsonOptions = new System.Text.Json.JsonSerializerOptions
+{
+	WriteIndented = true,
+	PropertyNameCaseInsensitive = true
+};
+var dataStore = new JsonFileDataStore(Path.Combine("data", "medcore.json"), jsonOptions);
 var errorReporter = new ConsoleErrorReporter();
 var persistenceService = new PersistenceService(dataStore, patientRepo, doctorRepo, nurseRepo, departmentRepo, appointmentRepo, errorReporter);
 

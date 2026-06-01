@@ -7,6 +7,8 @@ public interface IErrorReporter
 
 public sealed class NullErrorReporter : IErrorReporter
 {
+    public static readonly NullErrorReporter Instance = new();
+
     public void Report(string message, Exception? exception = null)
     {
     }

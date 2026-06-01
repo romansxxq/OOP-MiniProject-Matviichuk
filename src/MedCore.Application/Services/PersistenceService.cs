@@ -35,7 +35,7 @@ public class PersistenceService
         _nurses = nurses;
         _departments = departments;
         _appointments = appointments;
-        _errorReporter = errorReporter ?? new NullErrorReporter();
+        _errorReporter = errorReporter ?? NullErrorReporter.Instance;
     }
 
     /// <summary>Loads state from storage and replaces repositories.</summary>
